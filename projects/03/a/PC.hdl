@@ -12,9 +12,22 @@
  */
 
 CHIP PC {
-    IN in[16],load,inc,reset;
+    IN in[16], load, inc, reset;
     OUT out[16];
 
     PARTS:
-    // Put your code here:
+        // Should load if reset, load, or inc are set
+        Or(a=load, b=inc, out=or1);
+        Or(a=or1, b=reset, out=shouldLoad);
+
+        // if inc is set, increment registerOut and pass into the register
+        Inc16(in=registerOut, out=incOut);
+
+        // if load is set, pass the in directly into the register
+        Mux16(a=incOut, b=in, sel=load, out=incOrLoadOut);
+
+        // if reset is set, pass false into the register
+        Mux16(a=incOrLoadOut, b=false, sel=reset, out=registerIn);
+
+        Register(in=registerIn, load=shouldLoad, out=out, out=registerOut);
 }
